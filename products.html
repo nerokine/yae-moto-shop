@@ -3,468 +3,316 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Product Page</title>
+<title>YAE Motoshop – Products</title>
+<link href="https://fonts.googleapis.com/css2?family=Karla:wght@400;700&display=swap" rel="stylesheet">
 <style>
+:root{--red:#A91D3A;--bg:#151515;--card:rgba(18,18,18,.78);--text:#FFFBF5;--muted:#c9c2b8;--cream:#FBF9F1;--brown:#4F200D}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:'Karla',sans-serif;color:var(--text);background:#0c0c0c;min-height:100vh}
+/* FIX: background stays fixed to the screen, so it no longer stretches when content grows */
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.65)),url('motobg.png') center/cover no-repeat}
 
-    body {
-    background-image: url('motobg.png');
-    background-size: cover; 
-    background-repeat: no-repeat;
-    background-position: center; 
-    margin: 0;
-    padding: 0;
-	}
+nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:28px;padding:0 24px;height:64px;background:rgba(21,21,21,.95);backdrop-filter:blur(8px);border-bottom:2px solid var(--red)}
+nav img{height:48px}
+nav .links{display:flex;gap:26px;margin-right:auto;margin-left:20px}
+nav a{color:#F1F1F1;text-decoration:none;font-weight:700;font-size:18px;position:relative;padding:4px 0}
+nav a:hover,nav a.active{color:var(--red)}
+nav a::after{content:"";position:absolute;left:0;bottom:-2px;height:2px;width:0;background:var(--red);transition:width .25s}
+nav a:hover::after,nav a.active::after{width:100%}
+#cart-btn{position:relative;background:var(--red);color:#fff;border:0;border-radius:24px;padding:9px 18px;font:700 16px 'Karla',sans-serif;cursor:pointer;transition:transform .15s}
+#cart-btn:hover{transform:scale(1.05)}
+#cart-count{background:#fff;color:var(--red);border-radius:12px;padding:1px 8px;margin-left:6px;font-size:14px}
+#cart-btn.bump{animation:bump .3s}
+@keyframes bump{50%{transform:scale(1.2)}}
 
-    .transparent-links {
-      display: flex;
-      align-items: center;
-      background-color: #151515;
-      height: 60px;
-    }
+header.hero{text-align:center;padding:34px 16px 10px}
+header.hero h1{margin:0;font-size:clamp(34px,6vw,56px);text-shadow:4px 4px 4px var(--brown)}
+header.hero p{margin:6px 0 0;color:var(--muted)}
 
-    .transparent-link {
-      text-decoration: none;
-      font-size: 30px;
-      background-color: transparent;
-      border: none;
-      cursor: pointer;
-      margin-top: 0px;
-      margin-right: 60px;
-      font-family: 'Karla', serif;
-      font-weight: bold;
-      color: #F1F1F1;
-      position: relative;
-      text-shadow: 1px 2px 2px black;
-    }
+.toolbar{max-width:1300px;margin:18px auto 0;padding:0 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-right:auto}
+.chip{background:rgba(255,255,255,.08);color:var(--text);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:8px 16px;font:700 15px 'Karla',sans-serif;cursor:pointer;transition:.2s}
+.chip:hover{background:rgba(255,255,255,.18)}
+.chip.on{background:var(--red);border-color:var(--red)}
+.toolbar input,.toolbar select{background:var(--cream);color:var(--brown);border:0;border-radius:20px;padding:9px 16px;font:700 15px 'Karla',sans-serif}
+.toolbar input{width:210px}
 
-    .transparent-links a:first-child {
-      margin-left: 20px; 
-    }
+.grid{max-width:1300px;margin:0 auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px}
+.card{background:var(--card);border-radius:14px;border-bottom:3px solid var(--red);padding:18px;display:flex;flex-direction:column;text-align:center;transition:transform .25s,box-shadow .25s;animation:in .4s both}
+.card:hover{transform:translateY(-6px);box-shadow:0 12px 28px rgba(169,29,58,.35)}
+@keyframes in{from{opacity:0;transform:translateY(12px)}}
+.thumb{height:190px;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:10px;background:rgba(255,255,255,.05)}
+.thumb img{max-width:100%;max-height:100%;object-fit:contain;transition:transform .35s}
+.card:hover .thumb img{transform:scale(1.08)}
+.thumb.noimg::after{content:"🏍️";font-size:56px;opacity:.5}
+.cat{margin-top:12px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);font-weight:700}
+.card h3{margin:4px 0 8px;font-size:18px;flex:1}
+.price{font-size:20px;font-weight:700;margin-bottom:12px}
+.add{background:var(--cream);color:var(--brown);border:0;border-radius:20px;padding:10px;font:700 16px 'Karla',sans-serif;cursor:pointer;transition:.25s}
+.add:hover{background:var(--red);color:#fff}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px}
 
-    .transparent-link:hover {
-      color: #A91D3A;
-    }
+/* cart drawer */
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:.3s;z-index:90}
+#overlay.show{opacity:1;pointer-events:auto}
+#drawer{position:fixed;top:0;right:0;height:100%;width:min(420px,100%);background:#1b1b1b;border-left:3px solid var(--red);z-index:100;transform:translateX(100%);transition:transform .35s;display:flex;flex-direction:column}
+#drawer.show{transform:none}
+.d-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid #333}
+.d-head h2{margin:0}
+.x{background:none;border:0;color:var(--text);font-size:28px;cursor:pointer}
+#items{flex:1;overflow-y:auto;padding:10px 20px;margin:0;list-style:none}
+.row{display:flex;flex-direction:column;gap:8px;padding:14px 0;border-bottom:1px solid #2e2e2e}
+.row .top{display:flex;justify-content:space-between;gap:10px;font-weight:700}
+.qty{display:flex;align-items:center;gap:10px}
+.qty button{width:28px;height:28px;border-radius:50%;border:0;background:var(--cream);color:var(--brown);font-weight:700;cursor:pointer}
+.qty button:hover{background:var(--red);color:#fff}
+.rm{margin-left:auto;background:none;border:0;color:#e76f7f;cursor:pointer;font:700 14px 'Karla',sans-serif}
+.d-foot{padding:18px 20px;border-top:1px solid #333}
+.total{display:flex;justify-content:space-between;font-size:22px;font-weight:700;margin-bottom:12px}
+.primary{width:100%;background:var(--red);color:#fff;border:0;border-radius:24px;padding:13px;font:700 17px 'Karla',sans-serif;cursor:pointer;transition:.2s}
+.primary:hover{filter:brightness(1.15)}
+.primary:disabled{opacity:.4;cursor:not-allowed}
+.link{background:none;border:0;color:var(--muted);cursor:pointer;margin-top:8px;font:14px 'Karla',sans-serif;text-decoration:underline;width:100%}
 
-    .transparent-link:hover::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      bottom: -5px;
-      width: 100%;
-      height: 2px;
-      background-color: red;
-    }
-    
-    .container {
-        max-width: 1500px;
-        margin: 0 auto;
-        padding: 20px;
-        display: grid;
-        grid-gap: 20px;
-    }
+/* checkout modal */
+#modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:120;background:rgba(0,0,0,.7);padding:16px}
+#modal.show{display:flex}
+.box{background:#1b1b1b;border-bottom:3px solid var(--red);border-radius:16px;padding:26px;width:min(480px,100%);max-height:92vh;overflow-y:auto;animation:in .3s}
+.box h2{margin-top:0}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:14px;margin-bottom:5px;color:var(--muted)}
+.field input,.field select,.field textarea{width:100%;background:var(--cream);color:var(--brown);border:2px solid transparent;border-radius:10px;padding:11px;font:700 15px 'Karla',sans-serif}
+.field.bad input,.field.bad textarea{border-color:#e63946}
+.err{display:none;color:#ff8f99;font-size:13px;margin-top:4px}
+.field.bad .err{display:block}
+.pay-note{background:rgba(255,255,255,.07);border-radius:10px;padding:10px;font-size:14px;color:var(--muted);margin-bottom:14px}
+.summary{background:rgba(255,255,255,.06);border-radius:10px;padding:12px;margin-bottom:16px;font-size:15px}
+.summary div{display:flex;justify-content:space-between;padding:2px 0}
+.ok{text-align:center}
+.ok .tick{font-size:60px}
 
-    .product-category {
-        grid-column: span 4;
-        margin-bottom: 10px;
-    }
+#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,100px);background:var(--cream);color:var(--brown);padding:12px 22px;border-radius:24px;font-weight:700;z-index:150;transition:transform .35s;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+#toast.show{transform:translate(-50%,0)}
 
-    .product {
-    display: flex;
-    width: 300px;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    background-color: rgba(12, 12, 12, 0.5); 
-    border-radius: 10px;
-	border-bottom: 3px solid #A91D3A;
-    padding: 20px;
-    }
-
-    .product img {
-        width: 100%;
-        max-width: 200px;
-        height: auto;
-        margin-top: 10px;
-        border-radius: 10px;
-    }
-
-    #cart {
-        background: transparent;
-		width: 550px;
-        padding: 20px;
-        border-bottom: 3px solid #A91D3A;
-		border-radius: 20px;
-        margin-top: 20px;
-		margin-left: 850px;
-		margin-bottom: 20px;
-		background-color: rgba(12, 12, 12, 0.5);
-    }
-
-
-    #checkout-btn {
-        display: block;
-        width: 25%;
-        padding: 10px;
-        background-color: #007bff;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-		font-size: 20px; 
-		background-color: #FBF9F1; 
-		color: #4F200D; 
-		font-family: 'Karla', serif; 
-		text-align: center;
-		margin-left: 210px;
-    }
-    
-    .p1 {
-      color: #FFFBF5;
-      font-family: 'Karla', serif;
-      font-weight: bold;
-      text-align: center;
-      text-shadow: 4px 4px 4px #4F200D;
-      font-size: 50px;
-      margin-bottom: 0px; 
-    }
-    
-    .p2 {
-      color: #FFFBF5;
-      font-family: 'Karla', serif;
-      font-weight: bold;
-      text-align: center;
-      text-shadow: 4px 4px 4px #4F200D;
-      font-size: 25px;
-      margin-top: 5px;
-      margin-bottom: 0px;
-    }
-    .p3 {
-      color: #FFFBF5;
-      font-family: 'Karla', serif;
-      font-weight: bold;
-      text-align: center;
-      text-shadow: 4px 4px 4px #4F200D;
-      font-size: 17px;
-      margin-top: 5px;
-    }
-	
-	.p4 {
-      color: #FFFBF5;
-      font-family: 'Karla', serif;
-      font-weight: bold;
-      text-align: center;
-      text-shadow: 4px 4px 4px #4F200D;
-      font-size: 35px;
-      margin-top: 5px;
-
-    }
-	
-	.p5 {
-      color: #FFFBF5;
-      font-family: 'Karla', serif;
-      font-weight: bold;
-      text-align: center;
-      text-shadow: 1px 1px 1px #4F200D;
-      font-size: 20px;
-      margin-top: 2px;
-    }
-    
-    .add-to-cart {
-    background-color: #FBF9F1;
-    color: #4F200D;
-    font-family: 'Karla', serif;
-    font-weight: bold;
-    border: none;
-    border-radius: 20px;
-    padding: 10px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-bottom: 5px;
-    }
-
-    .add-to-cart:hover {
-    background-color: #6E371B;
-    }
-	
-	#cart-items li {
-   color: #FFFBF5;
-   font-family: 'Karla', serif;
-   font-weight: bold;
-   text-align: left;
-   text-shadow: 1px 1px 1px #4F200D;
-   font-size: 20px;
-   margin-top: 2px;
-   }
-   
-   #checkout-form {
-    background: transparent;
-    width: 550px;
-    padding: 20px;
-    border-radius: 20px;
-    margin-top: 20px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 20px;
-	background-color: rgba(12, 12, 12, 0.5);
-	 border-bottom: 3px solid #A91D3A;
-	}
-
-	.checkout-text {
-    color: black;
-    font-family: 'Karla', serif;
-    font-weight: bold;
-    text-align: center;
-    font-size: 20px;
-    margin-top: 2px;
-	margin-right: 10px;
-	margin-left: 12px;
-	padding: 5px;
-	}
-	
-	#payment-mode {
-	display: block;
-    margin: 10px auto; 
-    padding: 10px;
-    background-color: #78A083;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-	}
-	
-	#submit-order {
-    display: block;
-    margin: 10px auto; 
-    padding: 10px;
-    background-color: #503C3C;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-	}
-	
-	#card-number {
-    display: block;
-    margin: 10px auto;
-    padding: 10px;
-    background-color: #FBF9F1;
-    color: #4F200D;
-    font-family: 'Karla', serif;
-    font-weight: bold;
-    border: none;
-    border-radius: 20px;
-    transition: background-color 0.3s ease;
-    width: 100%; 
-    max-width: 300px; 
-	}
+@media(max-width:720px){nav .links{display:none}.toolbar input{width:100%}}
 </style>
 </head>
 <body>
 
-<nav class="transparent-links">
-     <img src="motologo.png" alt="Logo" style="height:200px; margin-top: 0px; margin-left: 400px; margin-right:680px;">
-     <a class="transparent-link" href="index.html" target="_self">Home</a>
-      <a class="transparent-link" href="products.html" target="_self">Products</a>
-      <a class="transparent-link" href="faqs.html" target="_self">FAQ's</a>
-      <a class="transparent-link" href="aboutus.html" target="_self">About Us</a>
+<nav>
+  <img src="motologo.png" alt="Logo" onerror="this.style.display='none'">
+  <div class="links">
+    <a href="index.html">Home</a>
+    <a href="products.html" class="active">Products</a>
+    <a href="faqs.html">FAQ's</a>
+    <a href="aboutus.html">About Us</a>
+  </div>
+  <button id="cart-btn" onclick="openCart()">🛒 Cart <span id="cart-count">0</span></button>
 </nav>
 
-<div class="container">
-    <div class="product-category">
-        <p class = "p1"> TIRES </p>
-    </div>
-    <div class="product">
-        <img src="tire1.png" alt="Product 1">
-        <p class = "p2"> Michelin Road 6 GT Tires </p>
-        <p class = "p3"> ₱13,931.00 </p>
-        <button class="add-to-cart" onclick="addToCart('Michelin Road 6 GT Tires', 13931)">Add to Cart</button>
-    </div>
-    <div class="product">
-        <img src="tire2.png" alt="Product 2">
-        <p class = "p2"> Pirelli Diablo Rosso IV Corsa Tires </p>
-        <p class = "p3"> ₱9,786.00 </p>
-        <button class="add-to-cart" onclick="addToCart('Pirelli Diablo Rosso IV Corsa Tires', 9786)">Add to Cart</button>
-    </div>
-    <div class="product">
-        <img src="tire4.png" alt="Product 4">
-        <p class = "p2"> Michelin Power 6 Tires </p>
-        <p class = "p3"> ₱10,246.00 </p>
-        <button class="add-to-cart" onclick="addToCart('Michelin Power 6 Tires', 10246)">Add to Cart</button>
-    </div>
-    <div class="product">
-        <img src="tire3.png" alt="Product 3">
-        <p class = "p2"> Michelin Anakee Road Tires </p>
-        <p class = "p3"> ₱12,894.00 </p>
-        <button class="add-to-cart" onclick="addToCart('Michelin Anakee Road Tires', 12894)">Add to Cart</button>
-    </div>
+<header class="hero">
+  <h1>Shop Parts</h1>
+  <p>Tires, filters, mirrors and more for your ride</p>
+</header>
 
-    <div class="product-category">
-        <p class = "p1"> AIR & FUEL </p>
-    </div>
-    <div class="product">
-        <img src="af1.png" alt="Product 5">
-        <p class = "p2"> K&N Air Filter </p>
-        <p class = "p3"> ₱2,705.00 </p>
-        <button class="add-to-cart" onclick="addToCart('K&N Air Filter', 2705)">Add to Cart</button>
-    </div>
-    <div class="product">
-        <img src="af2.png" alt="Product 1">
-        <p class = "p2"> BMC Air Filter </p>
-        <p class = "p3"> ₱3,569.00 </p>
-        <button class="add-to-cart" onclick="addToCart('BMC Air Filter', 3569)">Add to Cart</button>
-    </div>
-    <div class="product">
-        <img src="af3.png" alt="Product 1">
-        <p class = "p2"> DNA Air Filter </p>
-        <p class = "p3"> ₱2,820.00 </p>
-        <button class="add-to-cart" onclick="addToCart('DNA Air Filter', 2820)">Add to Cart</button>
-    </div>
-    <div class="product">
-        <img src="af4.png" alt="Product 1">
-        <p class = "p2"> Trask Assault Air Fulter </p>
-        <p class = "p3"> ₱4,202.00 </p>
-        <button class="add-to-cart" onclick="addToCart('Trask Assault Air Fulter', 4202)">Add to Cart</button>
-    </div>
-	<div class="product-category">
-        <p class = "p1"> MIRRORS </p>
-    </div>
-    <div class="product">
-        <img src="m1.png" alt="Product 6">
-        <p class = "p2"> Arlen Ness Mini Stocker Billet Mirror </p>
-        <p class = "p3"> ₱4,605.00 </p>
-        <button class="add-to-cart" onclick="addToCart('Arlen Ness Mini Stocker Billet Mirror', 4605)">Add to Cart</button>
-    </div>
-    <div class="product">
-        <img src="m2.png" alt="Product 7">
-        <p class = "p2"> CRG Hindsight Lanesplitter Bar End Mirror </p>
-        <p class = "p3"> ₱4,547.00 </p>
-        <button class="add-to-cart" onclick="addToCart('CRG Hindsight Lanesplitter Bar End Mirror', 4547)">Add to Cart</button>
-    </div>
-    <div class="product">
-        <img src="m3.png" alt="Product 1">
-        <p class = "p2"> Rizoma Reverse Retro Bar End Mirror </p>
-        <p class = "p3"> ₱5,699.00 </p>
-        <button class="add-to-cart" onclick="addToCart('Rizoma Reverse Retro Bar End Mirror', 5699)">Add to Cart</button>
-    </div>
-	 <div class="product">
-        <img src="m4.png" alt="Product 8">
-        <p class = "p2"> Bikemaster Sickle Mirror </p>
-        <p class = "p3"> ₱7,483.00 </p>
-        <button class="add-to-cart" onclick="addToCart('Bikemaster Sickle Mirror', 7483)">Add to Cart</button>
-    </div>
-	<div class="product-category">
-        <p class = "p1"> Oil Filter </p>
-    </div>
-    <div class="product">
-        <img src="oil1.png" alt="Product 9">
-        <p class = "p2"> MotoPro Oil Filter </p>
-        <p class = "p3"> ₱345.00 </p>
-        <button class="add-to-cart" onclick="addToCart('MotoPro Oil Filter', 345)">Add to Cart</button>
-    </div>
-    <div class="product">
-        <img src="oil2.png" alt="Product 10">
-        <p class = "p2"> S&S Cycle Oil Filter for Harley </p>
-        <p class = "p3"> ₱1,093.00 </p>
-        <button class="add-to-cart" onclick="addToCart('S&S Cycle Oil Filter for Harley', 1093)">Add to Cart</button>
-    </div>
-    <div class="product">
-        <img src="oil3.png" alt="Product 11">
-        <p class = "p2"> Kawasaki Oil Filter </p>
-        <p class = "p3"> ₱460.00 </p>
-        <button class="add-to-cart" onclick="addToCart('Kawasaki Oil Filter', 460)">Add to Cart</button>
-    </div>
-    <div class="product">
-        <img src="oil4.png" alt="Product 12">
-        <p class = "p2"> HiFloFiltro Premium Oil Filters </p>
-        <p class = "p3"> ₱172.00 </p>
-        <button class="add-to-cart" onclick="addToCart('HiFloFiltro Premium Oil Filters', 172)">Add to Cart</button>
-    </div>
-
+<div class="toolbar">
+  <div class="chips" id="chips"></div>
+  <input type="search" id="search" placeholder="Search products…" aria-label="Search products">
+  <select id="sort" aria-label="Sort">
+    <option value="default">Sort: Featured</option>
+    <option value="low">Price: Low to High</option>
+    <option value="high">Price: High to Low</option>
+    <option value="az">Name: A–Z</option>
+  </select>
 </div>
 
-<div id="cart">
-    <p class = "p4"> Cart Items </p>
-    <ul id="cart-items">
-    </ul>
-    <p class = "p5"> Total: ₱<span id="cart-total">0.00</span></p>
-   <button id="checkout-btn" onclick="checkout()" class="checkout-text">Checkout</button>
+<main class="grid" id="grid"></main>
 
+<div id="overlay" onclick="closeAll()"></div>
+
+<aside id="drawer" aria-label="Shopping cart">
+  <div class="d-head"><h2>Your Cart</h2><button class="x" onclick="closeAll()" aria-label="Close">×</button></div>
+  <ul id="items"></ul>
+  <div class="d-foot">
+    <div class="total"><span>Total</span><span id="total">₱0.00</span></div>
+    <button class="primary" id="checkout-btn" onclick="openCheckout()">Checkout</button>
+    <button class="link" onclick="clearCart()">Clear cart</button>
+  </div>
+</aside>
+
+<div id="modal">
+  <div class="box" id="box"></div>
 </div>
-
-<div id="checkout-form" style="display: none;">
-    <input type="text" id="name" placeholder="Name" class="checkout-text">
-    <input type="text" id="address" placeholder="Address" class="checkout-text">
-    <select id="payment-mode" class="checkout-text">
-    <option value="cash" class="checkout-text">Cash on Delivery</option>
-    <option value="credit" class="checkout-text">Credit Card</option>
-	</select>
-	<input type="text" id="card-number" placeholder="Credit Card Number" class="checkout-text" style="display: none;">
-    <button id="submit-order" onclick="submitOrder()" class="checkout-text">Submit Order</button>
-</div>
-
-
+<div id="toast"></div>
 
 <script>
-    let cartItems = [];
-    let cartTotal = 0;
+const PRODUCTS = [
+  {id:1,cat:'Tires',name:'Michelin Road 6 GT Tires',price:13931,img:'tire1.png'},
+  {id:2,cat:'Tires',name:'Pirelli Diablo Rosso IV Corsa Tires',price:9786,img:'tire2.png'},
+  {id:3,cat:'Tires',name:'Michelin Power 6 Tires',price:10246,img:'tire4.png'},
+  {id:4,cat:'Tires',name:'Michelin Anakee Road Tires',price:12894,img:'tire3.png'},
+  {id:5,cat:'Air & Fuel',name:'K&N Air Filter',price:2705,img:'af1.png'},
+  {id:6,cat:'Air & Fuel',name:'BMC Air Filter',price:3569,img:'af2.png'},
+  {id:7,cat:'Air & Fuel',name:'DNA Air Filter',price:2820,img:'af3.png'},
+  {id:8,cat:'Air & Fuel',name:'Trask Assault Air Filter',price:4202,img:'af4.png'},
+  {id:9,cat:'Mirrors',name:'Arlen Ness Mini Stocker Billet Mirror',price:4605,img:'m1.png'},
+  {id:10,cat:'Mirrors',name:'CRG Hindsight Lanesplitter Bar End Mirror',price:4547,img:'m2.png'},
+  {id:11,cat:'Mirrors',name:'Rizoma Reverse Retro Bar End Mirror',price:5699,img:'m3.png'},
+  {id:12,cat:'Mirrors',name:'Bikemaster Sickle Mirror',price:7483,img:'m4.png'},
+  {id:13,cat:'Oil Filters',name:'MotoPro Oil Filter',price:345,img:'oil1.png'},
+  {id:14,cat:'Oil Filters',name:'S&S Cycle Oil Filter for Harley',price:1093,img:'oil2.png'},
+  {id:15,cat:'Oil Filters',name:'Kawasaki Oil Filter',price:460,img:'oil3.png'},
+  {id:16,cat:'Oil Filters',name:'HiFloFiltro Premium Oil Filters',price:172,img:'oil4.png'}
+];
+const CATS = ['All', ...new Set(PRODUCTS.map(p => p.cat))];
+const $ = id => document.getElementById(id);
+const peso = n => '₱' + n.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2});
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-    function addToCart(productName, price) {
-        cartItems.push({ name: productName, price: price });
-        cartTotal += price;
-        updateCart();
-    }
+let cart = {};          // id -> qty
+let filter = 'All';
 
-    function updateCart() {
-        const cartList = document.getElementById('cart-items');
-        const totalElement = document.getElementById('cart-total');
-        cartList.innerHTML = '';
-        cartItems.forEach(item => {
-            const li = document.createElement('li');
-            li.textContent = `${item.name} ₱${item.price.toFixed(2)}`;
-            cartList.appendChild(li);
-        });
-        totalElement.textContent = cartTotal.toFixed(2);
-    }
+try { cart = JSON.parse(localStorage.getItem('cart') || '{}'); } catch(e) { cart = {}; }
+const save = () => { try { localStorage.setItem('cart', JSON.stringify(cart)); } catch(e) {} };
 
-    function checkout() {
-        const checkoutForm = document.getElementById('checkout-form');
-        checkoutForm.style.display = 'block';
-    }
+/* ---------- product grid ---------- */
+function renderChips(){
+  $('chips').innerHTML = CATS.map(c => `<button class="chip ${c===filter?'on':''}" data-c="${c}">${c}</button>`).join('');
+  $('chips').querySelectorAll('.chip').forEach(b => b.onclick = () => { filter = b.dataset.c; renderChips(); renderGrid(); });
+}
+function renderGrid(){
+  const q = $('search').value.trim().toLowerCase();
+  let list = PRODUCTS.filter(p => (filter==='All' || p.cat===filter) && p.name.toLowerCase().includes(q));
+  const s = $('sort').value;
+  if (s==='low') list.sort((a,b)=>a.price-b.price);
+  if (s==='high') list.sort((a,b)=>b.price-a.price);
+  if (s==='az') list.sort((a,b)=>a.name.localeCompare(b.name));
+  $('grid').innerHTML = list.length ? list.map((p,i) => `
+    <article class="card" style="animation-delay:${i*40}ms">
+      <div class="thumb"><img src="${p.img}" alt="${esc(p.name)}" loading="lazy" onerror="this.remove();this.parentNode&&0;"></div>
+      <div class="cat">${p.cat}</div>
+      <h3>${esc(p.name)}</h3>
+      <div class="price">${peso(p.price)}</div>
+      <button class="add" onclick="addToCart(${p.id})">Add to Cart</button>
+    </article>`).join('') : '<div class="empty">No products match your search.</div>';
+  // placeholder for missing images
+  $('grid').querySelectorAll('.thumb img').forEach(img => {
+    const mark = () => img.parentNode && img.parentNode.classList.add('noimg');
+    img.addEventListener('error', mark);
+    if (img.complete && img.naturalWidth === 0) mark();
+  });
+}
+$('search').oninput = renderGrid;
+$('sort').onchange = renderGrid;
 
-    function submitOrder() {
-        const name = document.getElementById('name').value;
-        const address = document.getElementById('address').value;
-        const paymentMode = document.getElementById('payment-mode').value;
-        let cardNumber = '';
-        if (paymentMode === 'credit') {
-            cardNumber = document.getElementById('card-number').value;
-        }
-        console.log('Name:', name);
-        console.log('Address:', address);
-        console.log('Payment Mode:', paymentMode);
-        console.log('Card Number:', cardNumber);
+/* ---------- cart ---------- */
+const find = id => PRODUCTS.find(p => p.id === +id);
+const count = () => Object.values(cart).reduce((a,b)=>a+b,0);
+const total = () => Object.entries(cart).reduce((s,[id,q]) => s + find(id).price*q, 0);
 
-        
-        cartItems = [];
-        cartTotal = 0;
-        updateCart();
-        const checkoutForm = document.getElementById('checkout-form');
-        checkoutForm.style.display = 'none';
-        alert('Order submitted successfully!');
-    }
+function addToCart(id){
+  cart[id] = (cart[id]||0) + 1;
+  save(); renderCart();
+  toast(`Added: ${find(id).name}`);
+  const b = $('cart-btn'); b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump');
+}
+function changeQty(id, d){
+  cart[id] = (cart[id]||0) + d;
+  if (cart[id] <= 0) delete cart[id];
+  save(); renderCart();
+}
+function removeItem(id){ delete cart[id]; save(); renderCart(); }
+function clearCart(){ cart = {}; save(); renderCart(); }
 
-    document.getElementById('payment-mode').addEventListener('change', function () {
-        const cardInput = document.getElementById('card-number');
-        if (this.value === 'credit') {
-            cardInput.style.display = 'block';
-        } else {
-            cardInput.style.display = 'none';
-        }
-    });
+function renderCart(){
+  $('cart-count').textContent = count();
+  const ids = Object.keys(cart).filter(id => find(id));
+  $('items').innerHTML = ids.length ? ids.map(id => {
+    const p = find(id), q = cart[id];
+    return `<li class="row">
+      <div class="top"><span>${esc(p.name)}</span><span>${peso(p.price*q)}</span></div>
+      <div class="qty">
+        <button onclick="changeQty(${id},-1)" aria-label="Decrease">−</button>
+        <span>${q}</span>
+        <button onclick="changeQty(${id},1)" aria-label="Increase">+</button>
+        <span style="color:var(--muted);font-size:13px">${peso(p.price)} each</span>
+        <button class="rm" style="background:none;width:auto;color:#e76f7f" onclick="removeItem(${id})">Remove</button>
+      </div></li>`;
+  }).join('') : '<li style="text-align:center;color:var(--muted);padding:40px 0">Your cart is empty 🏍️</li>';
+  $('total').textContent = peso(total());
+  $('checkout-btn').disabled = !ids.length;
+}
+
+function openCart(){ $('drawer').classList.add('show'); $('overlay').classList.add('show'); }
+function closeAll(){ $('drawer').classList.remove('show'); $('overlay').classList.remove('show'); $('modal').classList.remove('show'); }
+
+/* ---------- checkout ---------- */
+function openCheckout(){
+  if (!count()) return;
+  $('drawer').classList.remove('show'); $('overlay').classList.remove('show');
+  const lines = Object.entries(cart).map(([id,q]) => `<div><span>${q} × ${esc(find(id).name)}</span><span>${peso(find(id).price*q)}</span></div>`).join('');
+  $('box').innerHTML = `
+    <h2>Checkout</h2>
+    <div class="summary">${lines}<div style="border-top:1px solid #444;margin-top:6px;padding-top:6px;font-weight:700"><span>Total</span><span>${peso(total())}</span></div></div>
+    <form id="form" novalidate>
+      <div class="field"><label for="f-name">Full name</label><input id="f-name" autocomplete="name"><div class="err">Please enter your name.</div></div>
+      <div class="field"><label for="f-email">Email</label><input id="f-email" type="email" autocomplete="email"><div class="err">Enter a valid email address.</div></div>
+      <div class="field"><label for="f-phone">Mobile number</label><input id="f-phone" type="tel" placeholder="09XX XXX XXXX" autocomplete="tel"><div class="err">Enter a valid PH mobile number (e.g. 09171234567).</div></div>
+      <div class="field"><label for="f-addr">Delivery address</label><textarea id="f-addr" rows="2" autocomplete="street-address"></textarea><div class="err">Please enter your delivery address.</div></div>
+      <div class="field"><label for="f-pay">Payment method</label>
+        <select id="f-pay"><option value="cod">Cash on Delivery</option><option value="gcash">GCash</option><option value="card">Credit / Debit Card</option></select></div>
+      <div class="pay-note" id="pay-note" style="display:none"></div>
+      <button class="primary" type="submit">Place Order</button>
+      <button class="link" type="button" onclick="closeAll()">Cancel</button>
+    </form>`;
+  $('modal').classList.add('show');
+  $('f-pay').onchange = e => {
+    const n = $('pay-note'), v = e.target.value;
+    n.style.display = v==='cod' ? 'none' : 'block';
+    n.textContent = v==='gcash' ? "You'll receive GCash payment instructions after placing your order."
+                  : v==='card' ? "Card details are entered on a secure payment page after you place your order. Never type card numbers into this form." : '';
+  };
+  $('form').onsubmit = submitOrder;
+}
+
+function setBad(id, bad){ $(id).parentNode.classList.toggle('bad', bad); return !bad; }
+
+function submitOrder(e){
+  e.preventDefault();
+  const name = $('f-name').value.trim(), email = $('f-email').value.trim(),
+        phone = $('f-phone').value.replace(/[\s-]/g,''), addr = $('f-addr').value.trim();
+  const ok = [
+    setBad('f-name', name.length < 2),
+    setBad('f-email', !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)),
+    setBad('f-phone', !/^(09|\+639)\d{9}$/.test(phone)),
+    setBad('f-addr', addr.length < 8)
+  ].every(Boolean);
+  if (!ok) return;
+
+  const order = {
+    ref: 'ORD-' + Date.now().toString(36).toUpperCase(),
+    customer: {name, email, phone, addr},
+    payment: $('f-pay').value,
+    items: Object.entries(cart).map(([id,q]) => ({id:+id, name:find(id).name, qty:q, price:find(id).price})),
+    total: total()
+  };
+  console.log('Order ready to send to your backend:', order); // replace with fetch('/api/orders', ...)
+  clearCart();
+  $('box').innerHTML = `<div class="ok"><div class="tick">✅</div><h2>Order placed!</h2>
+    <p>Thanks, ${esc(name)}. Your order reference is <b>${order.ref}</b>.<br>A confirmation will be sent to ${esc(email)}.</p>
+    <button class="primary" onclick="closeAll()">Continue shopping</button></div>`;
+}
+
+/* ---------- misc ---------- */
+let tt;
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 1800);
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
+
+renderChips(); renderGrid(); renderCart();
 </script>
-
-
 </body>
 </html>
